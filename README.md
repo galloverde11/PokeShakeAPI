@@ -5,7 +5,7 @@ I Took the liberty to use part of a [wrapper nuget package](https://gitlab.com/P
 
 ## Installation
 
-The project has been created using VS 2019 Community and deployed as Linux docker container, so Docker desktop should be installed in order to run it.
+The project has been created using VS 2019 Community and deployed as Linux docker container, so Docker desktop should be installed in order to run it and VS to build the project.
 
 ## Configuration
 
@@ -40,11 +40,3 @@ Once deployed it can be called as follow
 ```bash
 GET https://localhost:32782/pokemon/{pokemon name}
 ```
-
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
