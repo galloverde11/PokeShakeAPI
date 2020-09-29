@@ -61,7 +61,6 @@ namespace PokeShakeAPI.Test
                 DefaultSiteURL = "https://api.funtranslations.com",
                 SpeciesEndpoint = "/translate/shakespeare.json?text=",
                 UserAgent = "PokeShakeAPI (https://gitlab.com/galloverde11/PokeShakeAPI or a fork of it)",
-                RandomDescription = false,
                 UseCache = false,
                 CacheSuffix = "shakecache_",
                 ResourceNotFoundMsg = "It was not possible to get a translation"
