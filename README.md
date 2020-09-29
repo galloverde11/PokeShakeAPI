@@ -2,6 +2,7 @@
 
 PokeShakeAPI is an API library to get "Shakespearized" Pokemon description; it gets the name of a Pokemon as input and returns the description.
 I Took the liberty to use part of a [wrapper nuget package](https://gitlab.com/PoroCYon/PokeApi.NET) to access the [pokeapi](https://pokeapi.co/), as it is published under the "DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE", but I had to make some changes because it is not updated with the current datastructure returnet by the service.
+From the instructions given, I understood the pokemon "ruby" flavor text was expected so this version is taken if available, otherwise the first available is taken. Only english descriptions are taken into consideration even if RandomDescription is enabled (in this case one of the english description is randomly choosen).
 
 ## Installation
 
