@@ -1,6 +1,8 @@
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
+using PokeShakeAPI.Controllers;
+using PokeShakeAPI.Models;
 using PokeShakeAPI.Services;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,59 +12,56 @@ namespace PokeShakeAPI.Test
     public class IntegrationTests
     {
         [Theory]
-        [InlineData("charizard")]
-        public async Task GetDescription(string itemName)
+        [InlineData("charizard", "CHARIZARD flies around the sky in search of powerful opponents. It breathes fire of such great heat that it melts anything. However, it never turns its fiery breath on any opponent weaker than itself.", "Charizard flies 'round the sky in search of powerful opponents. 't breathes fire of such most wondrous heat yond 't melts aught. However,  't nev'r turns its fiery breath on any opponent weaker than itself.")]
+        [InlineData("123", "123", "2343")]
+        [InlineData("red ronnie", "charlie chaplin", "tom cruise")]
+        [InlineData("&%/()$£^", "&%/()$£^", "£%$&$££")]
+        public async Task GetTranslatedDescription(string inputName, string description, string translatedDesc)
         {
-            var pokeOptions = new PokeOptions
-            {
-                DefaultSiteURL = "https://pokeapi.co",
-                SpeciesEndpoint = "/api/v2/pokemon-species/",
-                UserAgent = "PokeShakeAPI (https://gitlab.com/galloverde11/PokeShakeAPI or a fork of it)",
-                RandomDescription = false,
-                UseCache = true,
-                CacheSuffix = "pokecache_"
-            };
-            var options = new Mock<IOptions<PokeOptions>>();
-            options.Setup(x => x.Value).Returns(pokeOptions);
-            var cache = new MemoryCache(new MemoryCacheOptions());
+            // Arrange
+            var mockLogger = new Mock<ILogger<PokemonController>>();
+            var mockPokeService = new Mock<IPokeService>();
+            mockPokeService.Setup(repo => repo.GetDescription(inputName))
+                .Returns(Task.FromResult(description));
+            var mockShakeService = new Mock<IShakeService>();
+            mockShakeService.Setup(repo => repo.GetTranslation(description))
+                .Returns(Task.FromResult(translatedDesc));
 
-            var pokeService = new PokeService(options.Object, cache);
-            string t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            t = await pokeService.GetDescription(itemName);
-            Assert.NotNull(t);
+            var controller = new PokemonController(mockLogger.Object, mockPokeService.Object, mockShakeService.Object);
+
+            // Act
+            var result = await controller.Get(inputName);
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<ReturnModel>>(result);
+            var returnValue = Assert.IsType<ReturnModel>(actionResult.Value);
+            Assert.NotNull(returnValue);
+            Assert.NotEmpty(returnValue.Description);
         }
 
         [Theory]
-        [InlineData("You gave Mr. Tim a hearty meal, but unfortunately what he ate made him die.")]
-        public async Task GetTranslation(string itemName)
+        [InlineData("", "", "")]
+        public async Task GetTranslatedDescription_empty(string inputName, string description, string translatedDesc)
         {
-            var shakeOptions = new ShakeOptions
-            {
-                DefaultSiteURL = "https://api.funtranslations.com",
-                SpeciesEndpoint = "/translate/shakespeare.json?text=",
-                UserAgent = "PokeShakeAPI (https://gitlab.com/galloverde11/PokeShakeAPI or a fork of it)",
-                RandomDescription = false,
-                UseCache = false,
-                CacheSuffix = "shakecache_",
-                TranslationNotFoundMsg = "It was not possible to get a translation"
-            };
-            var options = new Mock<IOptions<ShakeOptions>>();
-            options.Setup(x => x.Value).Returns(shakeOptions);
-            var cache = new MemoryCache(new MemoryCacheOptions());
+            // Arrange
+            var mockLogger = new Mock<ILogger<PokemonController>>();
+            var mockPokeService = new Mock<IPokeService>();
+            mockPokeService.Setup(repo => repo.GetDescription(inputName))
+                .Returns(Task.FromResult(description));
+            var mockShakeService = new Mock<IShakeService>();
+            mockShakeService.Setup(repo => repo.GetTranslation(description))
+                .Returns(Task.FromResult(translatedDesc));
 
-            var shakeService = new ShakeService(options.Object, cache);
-            string t = await shakeService.GetTranslation(itemName);
-            Assert.NotNull(t);
-            Assert.DoesNotContain(shakeOptions.TranslationNotFoundMsg, t);
+            var controller = new PokemonController(mockLogger.Object, mockPokeService.Object, mockShakeService.Object);
+
+            // Act
+            var result = await controller.Get(inputName);
+
+            // Assert
+            var actionResult = Assert.IsType<ActionResult<ReturnModel>>(result);
+            var returnValue = Assert.IsType<ReturnModel>(actionResult.Value);
+            Assert.NotNull(returnValue);
+            Assert.Empty(returnValue.Description);
         }
     }
 }

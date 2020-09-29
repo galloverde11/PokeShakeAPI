@@ -1,6 +1,7 @@
 ﻿using LitJson;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using System;
 using System.Threading.Tasks;
 
 namespace PokeShakeAPI.Services
@@ -13,7 +14,6 @@ namespace PokeShakeAPI.Services
         {
             _options = options.Value;
             _cache = cache;
-            //DefaultBaseURL = _options.DefaultSiteURL + _options.SpeciesEndpoint;
             client.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
         }
 
@@ -29,23 +29,23 @@ namespace PokeShakeAPI.Services
             }
             else
                 return await GetCacheableTranslation(inputText);
-
-
         }
+
         public async Task<string> GetCacheableTranslation(string inputText)
         {
             if (!string.IsNullOrEmpty(inputText))
                 inputText = RemoveEscapeSequences(inputText);
             JsonData jsonData = JsonMapper.ToObject(await GetStringAsync(_options.DefaultSiteURL + _options.SpeciesEndpoint, inputText));
             if ((int)jsonData["success"]["total"] >= 1)
+            {
                 return (string)jsonData["contents"]["translated"];
+            }
             else
-                return _options.TranslationNotFoundMsg;
+                throw new Exception(_options.ResourceNotFoundMsg);
         }
 
         private static string RemoveEscapeSequences(string sText)
         {
-
             sText = sText.Replace("\a", " "); // Warning
             sText = sText.Replace("\b", " "); // BACKSPACE
             sText = sText.Replace("\f", " "); // Form-feed

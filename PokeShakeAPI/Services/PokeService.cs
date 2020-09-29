@@ -16,7 +16,6 @@ namespace PokeShakeAPI.Services
         {
             _options = options.Value;
             _cache = cache;
-            //DefaultBaseURL = _options.DefaultSiteURL + _options.SpeciesEndpoint;
             client.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
         }
         public async Task<string> GetDescription(string speciesName)
@@ -44,9 +43,11 @@ namespace PokeShakeAPI.Services
                 var englishFlavors = species.FlavorTexts.Where(f => f.Language.Name == "en");
                 flavorText = englishFlavors.ElementAt(random.Next(englishFlavors.Count() - 1)).FlavorText;
             }
+            if (flavorText == null)
+                throw new Exception(_options.ResourceNotFoundMsg);
             return flavorText;
         }
-        
+
         private async Task<string> GetCacheableDescription(string speciesName)
         {
             var species = await GetSpecies(speciesName);
@@ -58,7 +59,7 @@ namespace PokeShakeAPI.Services
 
         private async Task<PokemonSpecies> GetSpecies(string speciesName)
         {
-            var res = JsonMapper.ToObject<PokemonSpecies>(await GetStringAsync(_options.DefaultSiteURL + _options.SpeciesEndpoint,speciesName));
+            var res = JsonMapper.ToObject<PokemonSpecies>(await GetStringAsync(_options.DefaultSiteURL + _options.SpeciesEndpoint, speciesName));
             return res;
         }
 
